@@ -88,7 +88,14 @@ bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
 }
  
 bool ConnectionHandler::sendFrameAscii(const std::string& frame, char delimiter) {
-	bool result=sendBytes(frame.c_str(),frame.length());
+	/**
+    Reggister daniel 123 10.10.10 ==
+    send the register = in bytes
+    for(words)
+        word.c_str()
+    **/
+
+    bool result=sendBytes(frame.c_str(),frame.length());
 	if(!result) return false;
 	return sendBytes(&delimiter,1);
 }
