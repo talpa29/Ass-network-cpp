@@ -11,7 +11,7 @@ public:
     EncDec(ConnectionHandler &connectionHandler1,std::mutex &mutex1);
     virtual ~EncDec();
 
-    std::vector<unsigned char > encode(std::string msg);
+    std::vector<char > encode(std::string& msg);
 
     void run();
 

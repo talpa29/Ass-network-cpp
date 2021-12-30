@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <connectionHandler.h>
+#include "EncDec.h"
 
 /**
 * This code assumes that the server replies the exact text the client sent it (as opposed to the practical session example)
@@ -25,6 +26,12 @@ int main (int argc, char *argv[]) {
         std::cin.getline(buf, bufsize);
 		std::string line(buf);
 		int len=line.length();
+        ///////////////////
+        std::mutex mutex;
+        EncDec* encDec = new EncDec(connectionHandler,mutex);
+        std::string b = "REGISTER Rick pain 12-10-1951";
+        std::vector< char > a = encDec->encode(line);
+        ///////////////////////////
         if (!connectionHandler.sendLine(line)) {
             std::cout << "Disconnected. Exiting...\n" << std::endl;
             break;
