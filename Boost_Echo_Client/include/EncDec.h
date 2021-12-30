@@ -11,11 +11,11 @@ public:
     EncDec(ConnectionHandler &connectionHandler1,std::mutex &mutex1);
     virtual ~EncDec();
 
-    std::vector<char > encode(std::string& msg);
+    bool encode(std::string& msg);
 
     void run();
 
-    bool decode();
+    bool decode(std::string& msg);
 
 };
 

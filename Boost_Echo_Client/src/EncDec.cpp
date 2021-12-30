@@ -6,24 +6,18 @@ EncDec::EncDec(ConnectionHandler &connectionHandler1, std::mutex &mutex1):connec
 
 EncDec::~EncDec() {}
 
-std::vector<char > EncDec::encode(std::string& msg) {
-    /**
-    * recive messege, turn it to char vector
-    * send to connection handler vecor of chars.
-     *
-    */
+bool EncDec::encode(std::string& msg) {
     string delimiter = " ";
     vector<string> message;
     size_t pos = 0;
-    vector<char > out;
-    out.push_back('0');
-    out.push_back('0');
     while((pos = msg.find(delimiter)) != string::npos){
         string word = msg.substr(0,pos);
         message.push_back(word);
+        message.push_back("0");
         msg.erase(0,pos+delimiter.length());
     }
     message.push_back(msg.substr(0,pos));
+    message.push_back("0");
     short opcode;
     string opCodeString = message[0];
     if (opCodeString == "REGISTER")
@@ -44,37 +38,120 @@ std::vector<char > EncDec::encode(std::string& msg) {
         opcode = 8;
     else if (opCodeString == "NOTIFICATION")
         opcode = 9;
-    switch (opcode) {
-        case 1:
-            for (int i = 1; i < message.size(); ++i) {
-                for (int j = 0; j < message[i].size(); ++j) {
-                    out.push_back(message[i][j]);
-                }
-                out.push_back('0');
-            }
-            out.push_back(';');
-
-
+    char bytesArr[2];
+    bytesArr[0] = ((opcode >> 8) & 0xFF);
+    bytesArr[1] = (opcode & 0xFF);
+    connectionHandler.sendBytes(bytesArr,2);
+    bool result = true;
+    for (int i = 0; i < message.size(); ++i) {
+       result = result & connectionHandler.sendLine(message[i]);
     }
-    char chars[out.size()];
-    stringstream stream;
-    for (int i = 2; i < out.size(); ++i) {
-        chars[i] = out[i];
-        stream <<hex<< int(chars[i]);
-    }
-    string  a = stream.str();
+    char finishline[] = {';'};
+    connectionHandler.sendBytes(finishline,1);
 
-    chars[0] = ((opcode >> 8 ) & 0xFF );
-    chars[1] = (opcode & 0xFF);
+    return result;
 
-    return out;
 
 }
 
-bool EncDec::decode() {}
+bool EncDec::decode(string& msg) {
+    //opcode
+    char bytesArr1[2];
+    connectionHandler.getBytes(bytesArr1,2);
+    short result = (short)((bytesArr1[0] & 0xff) << 8);
+    result += (short)(bytesArr1[1] & 0xff);
+    if(result == 9) {
+        char bytesArr3[1];
+        connectionHandler.getBytes(bytesArr3,1);
+        short result1 = (short)(bytesArr1[1] & 0xff);
+        //read line
+        connectionHandler.getLine(msg);
+        string delimiter = "0";
+        size_t pos = 0;
+        string backfromserver = "Notification";
+        switch (result1) {
+            case 0:
+                backfromserver + " PM";
+                break;
+            case 1:
+                backfromserver + " Public";
+        }
+
+        while((pos = msg.find(delimiter)) != string::npos){
+            backfromserver =backfromserver + " " + msg.substr(0,pos);
+            msg.erase(0,pos+delimiter.length());
+        }
+        cout << backfromserver << endl;
+
+    }
+    else {
+        char bytesArr2[2];
+        connectionHandler.getBytes(bytesArr2,2);
+        short Messageopcode = (short)((bytesArr2[0] & 0xff) << 8);
+        Messageopcode += (short)(bytesArr2[1] & 0xff);
+        string messagefromserver;
+           if(result == 10) {
+               messagefromserver = "ACK";
+               string line;
+               connectionHandler.getLine(line);
+               string delimiter = "0";
+               size_t pos = 0;
+               switch (Messageopcode) {
+                   case 3:
+                       connectionHandler.terminates();
+                       break;
+                   case 4:
+                       //TODO - follow case, need to know what to print
+                       break;
+                   case 7:
+                       //TODO - logstat, need to know if i print the ack
+                       break;
+                   case 8:
+                       //TODO - stat, need to know if i print the ack
+                       break;
+
+
+               }
+               while((pos = msg.find(delimiter)) != string::npos){
+                   messagefromserver =messagefromserver + " " + msg.substr(0,pos);
+                   msg.erase(0,pos+delimiter.length());
+               }
+           }
+           else {
+               messagefromserver = "ERROR";
+               switch (Messageopcode) {
+                   case 1:
+                       messagefromserver = messagefromserver + " Register";
+                       break;
+                   case 2:
+                       messagefromserver = messagefromserver + " LOGIN";
+                       break;
+                   case 3:
+                       messagefromserver = messagefromserver + " LOGOUT";
+                       break;
+                   case 5:
+                       messagefromserver = messagefromserver + " POST";
+                       break;
+                   case 6:
+                       messagefromserver = messagefromserver + " PM";
+                       break;
+                   case 12:
+                       messagefromserver = messagefromserver + " BLOCK";
+
+               }
+               cout << messagefromserver << endl;
+           }
+    }
+
+
+
+}
 
 void EncDec::run() {
-    /**
-     * second reading thread
-     */
+    while (!connectionHandler.shouldterminate()) {
+        string ans;
+        decode(ans);
+    }
+
+
 }

@@ -11,7 +11,7 @@ private:
     std::mutex &mutex;
     EncDec encDec;
 public:
-    Reader(ConnectionHandler &connectionHandler1,std::mutex &mutex1);
+    Reader(ConnectionHandler &connectionHandler1,EncDec &encDec1,std::mutex &mutex1);
 
     void run();
 };

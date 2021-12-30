@@ -27,10 +27,9 @@ int main (int argc, char *argv[]) {
 		std::string line(buf);
 		int len=line.length();
         ///////////////////
-        std::mutex mutex;
-        EncDec* encDec = new EncDec(connectionHandler,mutex);
-        std::string b = "REGISTER Rick pain 12-10-1951";
-        std::vector< char > a = encDec->encode(line);
+//        std::mutex mutex;
+//        EncDec* encDec = new EncDec(connectionHandler,mutex);
+//        encDec->encode(line);
         ///////////////////////////
         if (!connectionHandler.sendLine(line)) {
             std::cout << "Disconnected. Exiting...\n" << std::endl;
