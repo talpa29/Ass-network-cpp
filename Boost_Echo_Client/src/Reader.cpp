@@ -5,13 +5,13 @@
 Reader::Reader(ConnectionHandler &connectionHandler1, EncDec &encDec1, std::mutex &mutex1):connectionHandler(connectionHandler1),
                                                                                            encDec(encDec1),mutex(mutex1) {};
 
-void Reader::run() {
+void Reader::operator()() {
     while(!connectionHandler.shouldterminate()) {
         const short bufsize = 1024;
         char buf[bufsize];
         std::cin.getline(buf, bufsize);
         std::string line(buf);
-        int len=line.length();
-        encDec.encode(line);
+        if(encDec.encode(line))
+            connectionHandler.terminates();
     }
 }

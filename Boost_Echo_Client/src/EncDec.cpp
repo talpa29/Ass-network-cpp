@@ -5,8 +5,6 @@ using namespace std;
 
 EncDec::EncDec(ConnectionHandler &connectionHandler1, std::mutex &mutex1):connectionHandler(connectionHandler1),mutex(mutex1) {}
 
-EncDec::~EncDec() {}
-
 bool EncDec::encode(std::string& msg) {
     string delimiter = " ";
     vector<string> message;
@@ -45,7 +43,7 @@ bool EncDec::encode(std::string& msg) {
     connectionHandler.sendBytes(bytesArr,2);
     bool result = true;
     for (int i = 0; i < message.size(); ++i) {
-       result = result & connectionHandler.sendLine(message[i]);
+        result = result & connectionHandler.sendLine(message[i]);
     }
     char finishline[] = {';'};
     connectionHandler.sendBytes(finishline,1);
@@ -91,107 +89,106 @@ bool EncDec::decode(string& msg) {
         short Messageopcode = (short)((bytesArr2[0] & 0xff) << 8);
         Messageopcode += (short)(bytesArr2[1] & 0xff);
         string messagefromserver;
-           if(result == 10) {
-               messagefromserver = "ACK";
-               string line;
-               connectionHandler.getLine(line);
-               string delimiter = "0";
-               size_t pos = 0;
-               switch (Messageopcode) {
-                   case 1:
-                       messagefromserver = messagefromserver + " 1";
-                       break;
-                   case 2:
-                       messagefromserver = messagefromserver + " 2";
-                       break;
-                   case 3:
-                       connectionHandler.terminates();
-                       break;
-                   case 4:
-                       //TODO - to check how to resolve if this is follow or unfollow ACK
-                       messagefromserver = messagefromserver + " 4" + line;
-                       break;
-                   case 5:
-                       messagefromserver = messagefromserver + " 5";
-                       break;
-                   case 6:
-                       messagefromserver = messagefromserver + " 6";
-                       break;
-                   case 7: // to resolve if we get ACK for each username so its okey
-                       messagefromsever = messagefromserver + " 7";
-                       for(int i = 0; i < 4; i++){
-                           char bytesArr[2];
-                           connectionHandler.getBytes(bytesArr2,2);
-                           short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
-                           MessageBytes += (short)(bytesArr2[1] & 0xff);
-                           messagefromsever = messagefromserver + " " + MessageBytes;
-                       }
-                       break;
-                   case 8:
-                       messagefromsever = messagefromserver + " 8";
-                       for(int i = 0; i < 4; i++){
-                           char bytesArr[2];
-                           connectionHandler.getBytes(bytesArr2,2);
-                           short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
-                           MessageBytes += (short)(bytesArr2[1] & 0xff);
-                           messagefromsever = messagefromserver + " " + MessageBytes;
-                       }
-                       break;
+        if(result == 10) {
+            messagefromserver = "ACK";
+            string line;
+            string delimiter = "0";
+            size_t pos = 0;
+            switch (Messageopcode) {
+                case 1:
+                    messagefromserver = messagefromserver + " 1";
+                    break;
+                case 2:
+                    messagefromserver = messagefromserver + " 2";
+                    break;
+                case 3:
+                    connectionHandler.terminates();
+                    break;
+                case 4: {
+                    char bytesArr5[1];
+                    connectionHandler.getBytes(bytesArr5,1);
+                    short followbyte = (short)(bytesArr5[0] & 0xff);
+                    connectionHandler.getLine(line);
+                    if (followbyte == 1)
+                        messagefromserver = messagefromserver + " 4 " + "1" + " " + line;
+                    else
+                        messagefromserver = messagefromserver + " 4 " + "0" + " " + line;
+                    break;
+                }
+                case 5:
+                    messagefromserver = messagefromserver + " 5";
+                    break;
+                case 6:
+                    messagefromserver = messagefromserver + " 6";
+                    break;
+                case 7:  {
+                    messagefromserver = messagefromserver + " 7";
+                    for(int i = 0; i < 4; i++){
+                        char bytesArr[2];
+                        connectionHandler.getBytes(bytesArr2,2);
+                        short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
+                        MessageBytes += (short)(bytesArr2[1] & 0xff);
+                        messagefromserver = messagefromserver + " " + (char)MessageBytes;
+                    }
+                    break;
+                }
+                case 8: {
+                    messagefromserver = messagefromserver + " 8";
+                    for(int i = 0; i < 4; i++){
+                        char bytesArr[2];
+                        connectionHandler.getBytes(bytesArr2,2);
+                        short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
+                        MessageBytes += (short)(bytesArr2[1] & 0xff);
+                        messagefromserver = messagefromserver + " " + (char)MessageBytes;
+                    }
+                    break;
+                }
+            }
+            while((pos = msg.find(delimiter)) != string::npos){
+                messagefromserver =messagefromserver + " " + msg.substr(0,pos);
+                msg.erase(0,pos+delimiter.length());
+            }
+        }
+        else {
+            messagefromserver = "ERROR";
+            switch (Messageopcode) {
+                case 1:
+                    messagefromserver = messagefromserver + " 1";
+                    break;
+                case 2:
+                    messagefromserver = messagefromserver + " 2";
+                    break;
+                case 3:
+                    messagefromserver = messagefromserver + " 3";
+                    break;
+                case 4:
+                    messagefromserver = messagefromserver + " 4";
+                    break;
+                case 5:
+                    messagefromserver = messagefromserver + " 5";
+                    break;
+                case 6:
+                    messagefromserver = messagefromserver + " 6";
+                    break;
+                case 7:
+                    messagefromserver = messagefromserver + " 7";
+                    break;
+                case 8:
+                    messagefromserver = messagefromserver + " 8";
+                    break;
+                case 12:
+                    messagefromserver = messagefromserver + " 12";
 
-
-               }
-               while((pos = msg.find(delimiter)) != string::npos){
-                   messagefromserver =messagefromserver + " " + msg.substr(0,pos);
-                   msg.erase(0,pos+delimiter.length());
-               }
-           }
-           else {
-               messagefromserver = "ERROR";
-               switch (Messageopcode) {
-                   case 1:
-                       messagefromserver = messagefromserver + " Register";
-                       break;
-                   case 2:
-                       messagefromserver = messagefromserver + " LOGIN";
-                       //messagefromserver = messagefromserver + " 2";
-                       break;
-                   case 3:
-                       messagefromserver = messagefromserver + " LOGOUT";
-                       //messagefromserver = messagefromserver + " 3";
-                       break;
-                   case 4:
-                       messagefromserver = messagefromserver + " FOLLOW";
-                       //messagefromserver = messagefromserver + " 4";
-                       break;
-                   case 5:
-                       messagefromserver = messagefromserver + " POST";
-                       break;
-                   case 6:
-                       messagefromserver = messagefromserver + " PM";
-                       //messagefromserver = messagefromserver + " 6";
-                       break;
-                   case 7:
-                       messagefromserver = messagefromserver + " LOGSTAT";
-                       //messagefromserver = messagefromserver + " 7";
-                       break;
-                   case 8:
-                       messagefromserver = messagefromserver + " STAT";
-                       //messagefromserver = messagefromserver + " 8";
-                       break;
-                   case 12:
-                       messagefromserver = messagefromserver + " BLOCK";
-                       //messagefromserver = messagefromserver + " 12";
-
-               }
-               cout << messagefromserver << endl;
-           }
+            }
+            cout << messagefromserver << endl;
+        }
     }
 
 
 
 }
 
-void EncDec::run() {
+void EncDec::operator()() {
     while (!connectionHandler.shouldterminate()) {
         string ans;
         decode(ans);

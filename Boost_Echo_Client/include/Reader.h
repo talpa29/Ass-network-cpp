@@ -9,11 +9,11 @@ class Reader{
 private:
     ConnectionHandler &connectionHandler;
     std::mutex &mutex;
-    EncDec encDec;
+    EncDec &encDec;
 public:
     Reader(ConnectionHandler &connectionHandler1,EncDec &encDec1,std::mutex &mutex1);
 
-    void run();
+    void operator()();
 };
 
 #endif //ASS4_CPP_READER_H
