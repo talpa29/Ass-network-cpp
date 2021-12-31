@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "EncDec.h"
 #include "connectionHandler.h"
 using namespace std;
@@ -97,17 +98,44 @@ bool EncDec::decode(string& msg) {
                string delimiter = "0";
                size_t pos = 0;
                switch (Messageopcode) {
+                   case 1:
+                       messagefromserver = messagefromserver + " 1";
+                       break;
+                   case 2:
+                       messagefromserver = messagefromserver + " 2";
+                       break;
                    case 3:
                        connectionHandler.terminates();
                        break;
                    case 4:
-                       //TODO - follow case, need to know what to print
+                       //TODO - to check how to resolve if this is follow or unfollow ACK
+                       messagefromserver = messagefromserver + " 4" + line;
                        break;
-                   case 7:
-                       //TODO - logstat, need to know if i print the ack
+                   case 5:
+                       messagefromserver = messagefromserver + " 5";
+                       break;
+                   case 6:
+                       messagefromserver = messagefromserver + " 6";
+                       break;
+                   case 7: // to resolve if we get ACK for each username so its okey
+                       messagefromsever = messagefromserver + " 7";
+                       for(int i = 0; i < 4; i++){
+                           char bytesArr[2];
+                           connectionHandler.getBytes(bytesArr2,2);
+                           short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
+                           MessageBytes += (short)(bytesArr2[1] & 0xff);
+                           messagefromsever = messagefromserver + " " + MessageBytes;
+                       }
                        break;
                    case 8:
-                       //TODO - stat, need to know if i print the ack
+                       messagefromsever = messagefromserver + " 8";
+                       for(int i = 0; i < 4; i++){
+                           char bytesArr[2];
+                           connectionHandler.getBytes(bytesArr2,2);
+                           short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
+                           MessageBytes += (short)(bytesArr2[1] & 0xff);
+                           messagefromsever = messagefromserver + " " + MessageBytes;
+                       }
                        break;
 
 
@@ -125,18 +153,34 @@ bool EncDec::decode(string& msg) {
                        break;
                    case 2:
                        messagefromserver = messagefromserver + " LOGIN";
+                       //messagefromserver = messagefromserver + " 2";
                        break;
                    case 3:
                        messagefromserver = messagefromserver + " LOGOUT";
+                       //messagefromserver = messagefromserver + " 3";
+                       break;
+                   case 4:
+                       messagefromserver = messagefromserver + " FOLLOW";
+                       //messagefromserver = messagefromserver + " 4";
                        break;
                    case 5:
                        messagefromserver = messagefromserver + " POST";
                        break;
                    case 6:
                        messagefromserver = messagefromserver + " PM";
+                       //messagefromserver = messagefromserver + " 6";
+                       break;
+                   case 7:
+                       messagefromserver = messagefromserver + " LOGSTAT";
+                       //messagefromserver = messagefromserver + " 7";
+                       break;
+                   case 8:
+                       messagefromserver = messagefromserver + " STAT";
+                       //messagefromserver = messagefromserver + " 8";
                        break;
                    case 12:
                        messagefromserver = messagefromserver + " BLOCK";
+                       //messagefromserver = messagefromserver + " 12";
 
                }
                cout << messagefromserver << endl;
