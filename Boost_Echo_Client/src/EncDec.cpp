@@ -12,7 +12,7 @@ bool EncDec::encode(std::string& msg) {
     while((pos = msg.find(delimiter)) != string::npos){
         string word = msg.substr(0,pos);
         message.push_back(word);
-        message.push_back("0");
+//        message.push_back("\0");
         msg.erase(0,pos+delimiter.length());
     }
     message.push_back(msg.substr(0,pos));
@@ -37,12 +37,15 @@ bool EncDec::encode(std::string& msg) {
         opcode = 8;
     else if (opCodeString == "NOTIFICATION")
         opcode = 9;
+    else if (opCodeString == "BLOCK") {
+        opcode = 12;
+    }
     char bytesArr[2];
     bytesArr[0] = ((opcode >> 8) & 0xFF);
     bytesArr[1] = (opcode & 0xFF);
     connectionHandler.sendBytes(bytesArr,2);
     bool result = true;
-    for (int i = 0; i < message.size(); ++i) {
+    for (int i = 1; i < message.size(); ++i) {
         result = result & connectionHandler.sendLine(message[i]);
     }
     char finishline[] = {';'};
