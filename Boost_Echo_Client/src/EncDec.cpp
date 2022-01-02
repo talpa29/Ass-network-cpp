@@ -1,6 +1,9 @@
 #include <stdlib.h>
 #include "EncDec.h"
 #include "connectionHandler.h"
+#include <chrono>
+#include <ctime>
+
 using namespace std;
 
 EncDec::EncDec(ConnectionHandler &connectionHandler1, std::mutex &mutex1):connectionHandler(connectionHandler1),mutex(mutex1) {}
@@ -29,8 +32,9 @@ bool EncDec::encode(std::string& msg) {
         opcode = 4;
     else if (opCodeString == "POST")
         opcode = 5;
-    else if (opCodeString == "PM")
+    else if (opCodeString == "PM") {
         opcode = 6;
+    }
     else if (opCodeString == "LOGSTAT")
         opcode = 7;
     else if (opCodeString == "STAT")
@@ -40,6 +44,7 @@ bool EncDec::encode(std::string& msg) {
     else if (opCodeString == "BLOCK") {
         opcode = 12;
     }
+
     char bytesArr[2];
     bytesArr[0] = ((opcode >> 8) & 0xFF);
     bytesArr[1] = (opcode & 0xFF);
@@ -47,6 +52,19 @@ bool EncDec::encode(std::string& msg) {
     bool result = true;
     for (int i = 1; i < message.size(); ++i) {
         result = result & connectionHandler.sendLine(message[i]);
+    }
+    if(opcode == 6) {
+        auto start = std::chrono::system_clock::now();
+        // Some computation here
+        auto end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end-start;
+        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+        string time =  std::ctime(&end_time);
+        time = time.substr(0, time.length() - 1);
+        result = result & connectionHandler.sendLine(time);
+        char finishline[] = {';'};
+        connectionHandler.sendBytes(finishline,1);
+        return result;
     }
     char finishline[] = {';'};
     connectionHandler.sendBytes(finishline,1);
