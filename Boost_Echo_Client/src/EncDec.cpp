@@ -126,14 +126,8 @@ bool EncDec::decode(string& msg) {
                     connectionHandler.terminates();
                     break;
                 case 4: {
-                    char bytesArr5[1];
-                    connectionHandler.getBytes(bytesArr5,1);
-                    short followbyte = (short)(bytesArr5[0] & 0xff);
                     connectionHandler.getLine(line);
-                    if (followbyte == 1)
-                        messagefromserver = messagefromserver + " 4 " + "1" + " " + line;
-                    else
-                        messagefromserver = messagefromserver + " 4 " + "0" + " " + line;
+                    messagefromserver = messagefromserver + " 4 " + line;
                     break;
                 }
                 case 5:
@@ -164,10 +158,6 @@ bool EncDec::decode(string& msg) {
                     }
                     break;
                 }
-            }
-            while((pos = msg.find(delimiter)) != string::npos){
-                messagefromserver =messagefromserver + " " + msg.substr(0,pos);
-                msg.erase(0,pos+delimiter.length());
             }
         }
         else {
@@ -201,8 +191,8 @@ bool EncDec::decode(string& msg) {
                     messagefromserver = messagefromserver + " 12";
 
             }
-            cout << messagefromserver << endl;
         }
+        cout << messagefromserver << endl;
     }
 
 
