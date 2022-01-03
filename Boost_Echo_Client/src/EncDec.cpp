@@ -222,7 +222,4 @@ void EncDec::operator()() {
         decode(ans);
     }
 
-
-
-
 }

@@ -11,7 +11,9 @@ void Reader::operator()() {
         char buf[bufsize];
         std::cin.getline(buf, bufsize);
         std::string line(buf);
-        if(encDec.encode(line))
+        if(!encDec.encode(line))
             connectionHandler.terminates();
     }
+
+
 }

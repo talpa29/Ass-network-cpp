@@ -22,13 +22,15 @@ int main (int argc, char *argv[]) {
 
     std::mutex mutex;
     EncDec reciver(connectionHandler,mutex);
-    Reader sender(connectionHandler,reciver,mutex);
+    EncDec senderenc(connectionHandler,mutex);
+    Reader sender(connectionHandler,senderenc,mutex);
 
     std::thread sendert(std::ref(sender));
     std::thread recivert(std::ref(reciver));
 
-    sendert.join();
     recivert.join();
+    sendert.detach();
+
     return 0;
 }
 
