@@ -49,13 +49,9 @@ public:
     // Close down the connection properly.
     void close();
 
-    bool shouldterminate() {
-        return terminate;
-    }
+    bool shouldterminate();
 
-    void terminates() {
-        terminate = false;
-    }
+    void terminates();
  
 }; //class ConnectionHandler
  

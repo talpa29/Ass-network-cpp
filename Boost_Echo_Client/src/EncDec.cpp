@@ -113,16 +113,18 @@ bool EncDec::decode(string& msg) {
         if(result == 10) {
             messagefromserver = "ACK";
             string line;
-            string delimiter = "0";
-            size_t pos = 0;
+            char tmparry[2];
             switch (Messageopcode) {
                 case 1:
                     messagefromserver = messagefromserver + " 1";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 2:
                     messagefromserver = messagefromserver + " 2";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 3:
+                    messagefromserver = messagefromserver + " 3";
                     connectionHandler.terminates();
                     break;
                 case 4: {
@@ -132,9 +134,11 @@ bool EncDec::decode(string& msg) {
                 }
                 case 5:
                     messagefromserver = messagefromserver + " 5";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 6:
                     messagefromserver = messagefromserver + " 6";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 7:  {
                     messagefromserver = messagefromserver + " 7";
@@ -143,8 +147,9 @@ bool EncDec::decode(string& msg) {
                         connectionHandler.getBytes(bytesArr2,2);
                         short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
                         MessageBytes += (short)(bytesArr2[1] & 0xff);
-                        messagefromserver = messagefromserver + " " + (char)MessageBytes;
+                        messagefromserver = messagefromserver + " " + to_string(MessageBytes);
                     }
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 }
                 case 8: {
@@ -154,44 +159,56 @@ bool EncDec::decode(string& msg) {
                         connectionHandler.getBytes(bytesArr2,2);
                         short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
                         MessageBytes += (short)(bytesArr2[1] & 0xff);
-                        messagefromserver = messagefromserver + " " + (char)MessageBytes;
+                        messagefromserver = messagefromserver + " " + to_string(MessageBytes);
                     }
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 }
             }
         }
         else {
             messagefromserver = "ERROR";
+            char tmparry[2];
             switch (Messageopcode) {
                 case 1:
                     messagefromserver = messagefromserver + " 1";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 2:
                     messagefromserver = messagefromserver + " 2";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 3:
                     messagefromserver = messagefromserver + " 3";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 4:
                     messagefromserver = messagefromserver + " 4";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 5:
                     messagefromserver = messagefromserver + " 5";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 6:
                     messagefromserver = messagefromserver + " 6";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 7:
                     messagefromserver = messagefromserver + " 7";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 8:
                     messagefromserver = messagefromserver + " 8";
+                    connectionHandler.getBytes(tmparry,1);
                     break;
                 case 12:
                     messagefromserver = messagefromserver + " 12";
+                    connectionHandler.getBytes(tmparry,1);
 
             }
         }
+
         cout << messagefromserver << endl;
     }
 
@@ -204,6 +221,8 @@ void EncDec::operator()() {
         string ans;
         decode(ans);
     }
+
+
 
 
 }
