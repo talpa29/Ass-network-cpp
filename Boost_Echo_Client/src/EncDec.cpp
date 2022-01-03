@@ -83,7 +83,7 @@ bool EncDec::decode(string& msg) {
     if(result == 9) {
         char bytesArr3[1];
         connectionHandler.getBytes(bytesArr3,1);
-        short result1 = (short)(bytesArr1[1] & 0xff);
+        short result1 = (short)(bytesArr3[0] & 0xff);
         //read line
         connectionHandler.getLine(msg);
         string delimiter = "0";
@@ -91,10 +91,10 @@ bool EncDec::decode(string& msg) {
         string backfromserver = "Notification";
         switch (result1) {
             case 0:
-                backfromserver + " PM";
+                backfromserver = backfromserver + " PM";
                 break;
             case 1:
-                backfromserver + " Public";
+                backfromserver = backfromserver + " Public";
         }
 
         while((pos = msg.find(delimiter)) != string::npos){
