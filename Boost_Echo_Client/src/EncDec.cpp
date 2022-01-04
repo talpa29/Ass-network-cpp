@@ -3,6 +3,8 @@
 #include "connectionHandler.h"
 #include <chrono>
 #include <ctime>
+#include <algorithm>
+#include <string>
 
 using namespace std;
 
@@ -15,11 +17,9 @@ bool EncDec::encode(std::string& msg) {
     while((pos = msg.find(delimiter)) != string::npos){
         string word = msg.substr(0,pos);
         message.push_back(word);
-//        message.push_back("\0");
         msg.erase(0,pos+delimiter.length());
     }
     message.push_back(msg.substr(0,pos));
-    message.push_back("0");
     short opcode;
     string opCodeString = message[0];
     if (opCodeString == "REGISTER")
@@ -50,10 +50,15 @@ bool EncDec::encode(std::string& msg) {
     bytesArr[1] = (opcode & 0xFF);
     connectionHandler.sendBytes(bytesArr,2);
     bool result = true;
-    for (int i = 1; i < message.size(); ++i) {
-        result = result & connectionHandler.sendLine(message[i]);
-    }
     if(opcode == 6) {
+        //send username separately
+        result = result & connectionHandler.sendLine(message[1]);
+        //
+        string content = message[2];
+        for (int i = 3; i < message.size(); ++i) {
+            content = content + " " + message[i];
+        }
+        result = result & connectionHandler.sendLine(content);
         auto start = std::chrono::system_clock::now();
         // Some computation here
         auto end = std::chrono::system_clock::now();
@@ -65,6 +70,11 @@ bool EncDec::encode(std::string& msg) {
         char finishline[] = {';'};
         connectionHandler.sendBytes(finishline,1);
         return result;
+    }
+    else {
+        for (int i = 1; i < message.size(); ++i) {
+            result = result & connectionHandler.sendLine(message[i]);
+        }
     }
     char finishline[] = {';'};
     connectionHandler.sendBytes(finishline,1);
@@ -86,8 +96,6 @@ bool EncDec::decode(string& msg) {
         short result1 = (short)(bytesArr3[0] & 0xff);
         //read line
         connectionHandler.getLine(msg);
-        string delimiter = "0";
-        size_t pos = 0;
         string backfromserver = "Notification";
         switch (result1) {
             case 0:
@@ -96,11 +104,9 @@ bool EncDec::decode(string& msg) {
             case 1:
                 backfromserver = backfromserver + " Public";
         }
-
-        while((pos = msg.find(delimiter)) != string::npos){
-            backfromserver =backfromserver + " " + msg.substr(0,pos);
-            msg.erase(0,pos+delimiter.length());
-        }
+        replace(msg.begin(),msg.end(),'\0',' ');
+        msg = msg.substr(0,msg.length() - 1);
+        backfromserver = backfromserver + " " + msg;
         cout << backfromserver << endl;
 
     }
@@ -129,6 +135,7 @@ bool EncDec::decode(string& msg) {
                     break;
                 case 4: {
                     connectionHandler.getLine(line);
+                    line = line.substr(0, line.size() - 2);
                     messagefromserver = messagefromserver + " 4 " + line;
                     break;
                 }
@@ -163,6 +170,9 @@ bool EncDec::decode(string& msg) {
                     }
                     connectionHandler.getBytes(tmparry,1);
                     break;
+                }
+                case 12: {
+                    messagefromserver = messagefromserver + " 12";
                 }
             }
         }
@@ -211,6 +221,7 @@ bool EncDec::decode(string& msg) {
 
         cout << messagefromserver << endl;
     }
+    return true;
 
 
 

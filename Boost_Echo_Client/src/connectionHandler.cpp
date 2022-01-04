@@ -106,6 +106,7 @@ void ConnectionHandler::close() {
 
 void ConnectionHandler::terminates() {
     terminate = true;
+    close();
 }
 
 bool ConnectionHandler::shouldterminate() {
