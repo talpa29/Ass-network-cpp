@@ -8,7 +8,7 @@
 
 using namespace std;
 
-EncDec::EncDec(ConnectionHandler &connectionHandler1, std::mutex &mutex1):connectionHandler(connectionHandler1),mutex(mutex1) {}
+EncDec::EncDec(ConnectionHandler &connectionHandler1):connectionHandler(connectionHandler1) {}
 
 bool EncDec::encode(std::string& msg) {
     string delimiter = " ";

@@ -2,8 +2,8 @@
 #include "connectionHandler.h"
 #include "EncDec.h"
 
-Reader::Reader(ConnectionHandler &connectionHandler1, EncDec &encDec1, std::mutex &mutex1):connectionHandler(connectionHandler1),
-                                                                                           encDec(encDec1),mutex(mutex1) {};
+Reader::Reader(ConnectionHandler &connectionHandler1, EncDec &encDec1):connectionHandler(connectionHandler1),
+                                                                                           encDec(encDec1) {};
 
 void Reader::operator()() {
     while(!connectionHandler.shouldterminate()) {

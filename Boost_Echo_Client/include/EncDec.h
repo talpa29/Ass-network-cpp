@@ -7,9 +7,8 @@
 class EncDec{
 private:
     ConnectionHandler &connectionHandler;
-    std::mutex &mutex;
 public:
-    EncDec(ConnectionHandler &connectionHandler1,std::mutex &mutex1);
+    EncDec(ConnectionHandler &connectionHandler1);
 
     bool encode(std::string& msg);
 
