@@ -67,6 +67,7 @@ bool EncDec::encode(std::string& msg) {
         string time =  std::ctime(&end_time);
         time = time.substr(0, time.length() - 1);
         result = result & connectionHandler.sendLine(time);
+        //send at the end the finish of the line
         char finishline[] = {';'};
         connectionHandler.sendBytes(finishline,1);
         return result;
@@ -173,6 +174,7 @@ bool EncDec::decode(string& msg) {
                 }
                 case 12: {
                     messagefromserver = messagefromserver + " 12";
+                    connectionHandler.getBytes(tmparry,1);
                 }
             }
         }
