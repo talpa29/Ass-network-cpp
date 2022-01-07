@@ -55,7 +55,7 @@ bool EncDec::encode(std::string& msg) {
         result = result & connectionHandler.sendLine(message[1]);
         //
         string content = message[2];
-        for (int i = 3; i < message.size(); ++i) {
+        for (int i = 3; i < static_cast<int>(message.size()); ++i) {
             content = content + " " + message[i];
         }
         result = result & connectionHandler.sendLine(content);
@@ -73,7 +73,7 @@ bool EncDec::encode(std::string& msg) {
         return result;
     }
     else {
-        for (int i = 1; i < message.size(); ++i) {
+        for (int i = 1; i < static_cast<int>(message.size()); ++i) {
             result = result & connectionHandler.sendLine(message[i]);
         }
     }
@@ -151,7 +151,6 @@ bool EncDec::decode(string& msg) {
                 case 7:  {
                     messagefromserver = messagefromserver + " 7";
                     for(int i = 0; i < 4; i++){
-                        char bytesArr[2];
                         connectionHandler.getBytes(bytesArr2,2);
                         short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
                         MessageBytes += (short)(bytesArr2[1] & 0xff);
@@ -163,7 +162,6 @@ bool EncDec::decode(string& msg) {
                 case 8: {
                     messagefromserver = messagefromserver + " 8";
                     for(int i = 0; i < 4; i++){
-                        char bytesArr[2];
                         connectionHandler.getBytes(bytesArr2,2);
                         short MessageBytes = (short)((bytesArr2[0] & 0xff) << 8);
                         MessageBytes += (short)(bytesArr2[1] & 0xff);
